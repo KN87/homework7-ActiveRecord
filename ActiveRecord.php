@@ -15,27 +15,27 @@ define('dbname','kn262');
 
 class dbConn{
 
-  protected static $db;
+    protected static $db;
 
-  private function __construct()
-  {
-      try{
+    private function __construct()
+    {
+        try{
             self::$db = new PDO('mysql:host='.connection.';dbname='.dbname,username,password);
             self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-      }
-      catch (PDOException $e){
+        }
+        catch (PDOException $e){
             echo"Connection Error".$e->getMessage();
 
-      }
-  }
-  public static function getConnection(){
+        }
+    }
+    public static function getConnection(){
 
-      if(!self::$db){
-          new dbConn();
-      }
-      return self::$db;
-  }
+        if(!self::$db){
+            new dbConn();
+        }
+        return self::$db;
+    }
 }
 
 class collection{
@@ -99,17 +99,24 @@ echo "</table>";
 
 class model
 {
-   // protected $tableName;
+    // protected $tableName;
     public function runQuery($sql){
         $db = dbConn::getConnection();
         $statement = $db->prepare($sql);
         $statement->execute();
-        echo 'Data inserted </br>';
+        //echo 'Data inserted </br>';
     }
 
 
-    public function insert($fieldList,$valueList)
+    public function insert($data)
     {
+
+        $fieldList = array();
+        $fieldList = array_keys($data);
+
+        $valueList = array();
+        $valueList = array_values($data);
+
         $fields = '('.implode(',', $fieldList) .')';
         $values= "'" . implode("','", $valueList) . "'";
         $sql = 'insert into '.static::$tableName. $fields.' values ('.$values.");";
@@ -148,21 +155,21 @@ class todo extends model {
 
     public function dataList_to_insert(){
 
-        $valueList = array('15','cs214@njit.edu','15','2017-11-09','2017-11-26','Hello4','1');
-        $fieldList = array('id','owneremail','ownerid','createddate','duedate','message','isdone');
-        $this->insert($fieldList,$valueList);
+        $data = array("id"=> "18","owneremail"=> "cc40@njit.edu","ownerid"=> "18","createddate"=> "2017-11-09","duedate"=> "2017-11-26","message"=> "Hello6","isdone"=> "0");
+        // $valueList = array('15','cs214@njit.edu','15','2017-11-09','2017-11-26','Hello4','1');
+        // $fieldList = array('id','owneremail','ownerid','createddate','duedate','message','isdone');
+        // $this->insert($fieldList,$valueList);
+        $this->insert($data);
     }
 
     public function dataList_to_update($id){
 
-        $data = array("ownerid"=> "10", "message"=> "Update1");
+        $data = array("ownerid"=> "10", "message"=> "Update4");
         $this->$id = $id;
-        //$valueList = array('13','bb21@njit.edu','13','2017-11-09','2017-11-26','Hello2','0');
-        //$fieldList = array('id','owneremail','ownerid','createddate','duedate','message','isdone');
         $this->update($data,$id);
     }
 
-    
+
 
 }
 
