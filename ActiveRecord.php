@@ -13,6 +13,21 @@ define('username','kn262');
 define('password','NvlYN5s5');
 define('dbname','kn262');
 
+function tableConst($result){
+
+    echo "<table style='border: solid 1px black;'>";
+    foreach ($result as $record){
+        echo "<tr>";
+        foreach( $record as $col){
+            echo "<td style='width:150px;border:1px solid black;'>".$col."</td>";
+        }
+        echo "</tr>";
+    }
+    echo "</table>";
+
+}
+
+
 class dbConn{
 
     protected static $db;
@@ -82,31 +97,43 @@ class todos extends collection {
 }
 
 
-$result = accounts::findAll();
-echo "<table style='border: solid 1px black;'>";
-foreach ($result as $record){
-    echo "<tr>";
-    foreach( $record as $col){
-        echo "<td style='width:150px;border:1px solid black;'>".$col."</td>";
-    }
-    echo "</tr>";
-}
-echo "</table>";
+$result_all = accounts::findAll();
+echo "<h3> Select All Records </h3> <br>";
+tableConst($result_all);
 
-
-
+$result_one = accounts::findOne(10);
+echo "<h3> Select One Record </h3> <br>";
+tableConst($result_one);
 
 
 class model
 {
-    // protected $tableName;
+
+    public function save($flag=null){
+
+        $data = get_object_vars($this);
+        if(isset($flag)){
+
+            echo "Here for Insert:: <br>";
+            $sql = $this->insert($data);
+
+        }
+        else {
+
+            echo "Here for Update:: <br>";
+            $sql = $this->update($data);
+
+        }
+        $this->runQuery($sql);
+
+    }
+
     public function runQuery($sql){
         $db = dbConn::getConnection();
         $statement = $db->prepare($sql);
         $statement->execute();
-        //echo 'Data inserted </br>';
-    }
 
+    }
 
     public function insert($data)
     {
@@ -121,24 +148,34 @@ class model
         $values= "'" . implode("','", $valueList) . "'";
         $sql = 'insert into '.static::$tableName. $fields.' values ('.$values.");";
         echo $sql;
-        $this->runQuery($sql);
+        echo "<br>";
+        return $sql;
+        //$this->runQuery($sql);
 
     }
 
-    public function update($data,$id)
+    public function update($data)
     {
         $cols = array();
 
         foreach($data as $key=>$val) {
             $cols[] = "$key = '$val'";
         }
-        //$sql = "UPDATE $table SET " . implode(', ', $cols) . " WHERE $where";
 
-        $sql = 'update '.static::$tableName.' set ' . implode(', ', $cols) . " where id =" .$id;
+        $sql = 'update '.static::$tableName.' set ' . implode(', ', $cols) . " where id =" .$data['id'];
 
         echo $sql;
-        $this->runQuery($sql);
+        echo "<br>";
+        return $sql;
+        //$this->runQuery($sql);
 
+    }
+
+    public function delete(){
+
+        echo "Here for delete:: <br>";
+        $sql = 'delete from '.static::$tableName.' where id =' .$this->id;
+        $this->runQuery($sql);
     }
 }
 
@@ -153,28 +190,29 @@ class todo extends model {
     public $isdone;
     protected static $tableName = 'todos';
 
-    public function dataList_to_insert(){
-
-        $data = array("id"=> "18","owneremail"=> "cc40@njit.edu","ownerid"=> "18","createddate"=> "2017-11-09","duedate"=> "2017-11-26","message"=> "Hello6","isdone"=> "0");
-        // $valueList = array('15','cs214@njit.edu','15','2017-11-09','2017-11-26','Hello4','1');
-        // $fieldList = array('id','owneremail','ownerid','createddate','duedate','message','isdone');
-        // $this->insert($fieldList,$valueList);
-        $this->insert($data);
-    }
-
-    public function dataList_to_update($id){
-
-        $data = array("ownerid"=> "10", "message"=> "Update4");
-        $this->$id = $id;
-        $this->update($data,$id);
+    public function __construct($id,$owneremail=null,$ownerid=null,$createddate=null,$duedate=null,$message=null,$isdone=null)
+    {
+        $this->id = $id;
+        $this->owneremail = $owneremail;
+        $this->ownerid = $ownerid;
+        $this->createddate = $createddate;
+        $this->duedate = $duedate;
+        $this->message = $message;
+        $this->isdone = $isdone;
     }
 
 
 
 }
 
-$input = new todo();
-$input->dataList_to_insert();
-$input->dataList_to_update(11);
+$insertObj = new todo("27","6t8o@njit.edu","27","2017-11-09","2017-11-26","Hello7i","0");
+$insertObj->save(1);
+
+$updateObj = new todo("19","mhb@njit.edu","17","2017-11-09","2017-11-26","Hello17","0");
+$updateObj->save();
+
+$deleteObj = new todo(14);
+$deleteObj->delete();
+
 
 
