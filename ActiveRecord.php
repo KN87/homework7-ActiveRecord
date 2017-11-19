@@ -15,18 +15,94 @@ define('dbname','kn262');
 
 function tableConst($result){
 
+    $header = $result[0];
+
+    $html = '<html>';
+    $html .= '<link rel="stylesheet" href="Style.css">';
+    $html .= '<table>';
+    $html .= '<tr>';
+    foreach ($header as $key=>$value){
+        $html .= '<th>'.$key.'</th>';
+    }
+    $html .= '</tr>';
+    foreach ($result as $record){
+        $html .= '<tr>';
+        foreach( $record as $col){
+            $html .= '<td>'.$col.'</td>';
+        }
+        $html .= '</tr>';
+    }
+    $html .= '</table>';
+    print_r($html);
+
+    /*
+
     echo "<table style='border: solid 1px black;'>";
+    $header = $result[0];
+    //print_r ($header);
+    echo "<tr>";
+    foreach ($header as $key=>$value){
+        echo "<th style='width:150px;
+                         border:1px solid black;
+                         font-weight:bold;
+                         text-align: center;
+                         text-transform: capitalize;
+                         background-color: lightskyblue'>".$key."</th>";
+        }
+    echo "</tr>";
+
     foreach ($result as $record){
         echo "<tr>";
-        foreach( $record as $col){
-            echo "<td style='width:150px;border:1px solid black;'>".$col."</td>";
+            foreach( $record as $col){
+                echo "<td style='width:150px;border:1px solid black;'>".$col."</td>";
+            }
+            echo "</tr>";
         }
-        echo "</tr>";
-    }
-    echo "</table>";
+        echo "</table>"; */
 
 }
+class CreateStatusTable{
 
+    function __construct()
+    {
+        echo "<br> <h3> Status table for Insert/update/delete </h3> <br>";
+        $html = '<html>';
+        $html .= '<link rel="stylesheet" href="Style.css">';
+        $html .= '<table>';
+        $html .= '<tr>';
+        $html .= '<th> Sl.No </th>';
+        $html .= '<th> Title </th>';
+        $html .= '<th> Status </th>';
+        $html .= '</tr>';
+        print_r($html);
+
+
+    }
+
+    public static function addRow($seq,$comment,$status){
+
+        $html = '<html>';
+        $html .= '<link rel="stylesheet" href="Style.css">';
+        $html .= '<table>';
+        $html .= '<tr>';
+        $html .= '<td>'. $seq.' </td>';
+        $html .= '<td>'. $comment.' </td>';
+        $html .= '<td>'. $status.' </td>';
+        $html .= '</tr>';
+        print_r($html);
+
+
+        /*
+        echo "<table style='border: solid 1px black;'>";
+        echo "<tr>";
+        echo "<td style='width:150px;border:1px solid black;'>".$seq. "</td>";
+        echo "<td style='width:150px;border:1px solid black;'>".$comment. "</td>";
+        echo "<td style='width:150px;border:1px solid black;'>".$status. "</td>";
+        echo "</tr> </table>";*/
+
+    }
+
+}
 
 class dbConn{
 
@@ -97,30 +173,44 @@ class todos extends collection {
 }
 
 
-$result_all = accounts::findAll();
-echo "<h3> Select All Records </h3> <br>";
-tableConst($result_all);
+$result_all_acc = accounts::findAll();
+echo "<h3> Select All Records from Accounts </h3>";
+tableConst($result_all_acc);
 
-$result_one = accounts::findOne(10);
-echo "<h3> Select One Record </h3> <br>";
-tableConst($result_one);
+$result_one_acc = accounts::findOne(10);
+echo "<h3> Select One Record from Accounts </h3>";
+tableConst($result_one_acc);
+
+$result_all_todo = todos::findAll();
+echo "<h3> Select All Records from Todos </h3>";
+tableConst($result_all_todo);
+
+$result_one_todo = todos::findOne(7);
+echo "<h3> Select One Record from Todos </h3>";
+tableConst($result_one_todo);
 
 
 class model
 {
 
-    public function save($flag=null){
+    static $seq = 0;
+    static $operation = "";
+
+
+    public function save(){
 
         $data = get_object_vars($this);
-        if(isset($flag)){
+        //print_r ($data);
+        if(is_null($this->id)){
 
-            echo "Here for Insert:: <br>";
+            self::$operation = "Insert";
+            //echo "Here for Insert:: <br>";
             $sql = $this->insert($data);
 
         }
         else {
-
-            echo "Here for Update:: <br>";
+            self::$operation = "Update";
+            //echo "Here for Update:: <br>";
             $sql = $this->update($data);
 
         }
@@ -129,9 +219,21 @@ class model
     }
 
     public function runQuery($sql){
+
         $db = dbConn::getConnection();
         $statement = $db->prepare($sql);
-        $statement->execute();
+        $flag = $statement->execute();
+        if($flag){
+            self::$seq = self::$seq +1;
+            $comment= 'Success for '.self::$operation. ' in table '.static::$tableName;
+            $status = 'Completed';
+            CreateStatusTable::addRow(self::$seq,$comment,$status);
+
+        }
+        else{
+            echo 'Problem for '.self::$operation;
+
+        }
 
     }
 
@@ -147,8 +249,8 @@ class model
         $fields = '('.implode(',', $fieldList) .')';
         $values= "'" . implode("','", $valueList) . "'";
         $sql = 'insert into '.static::$tableName. $fields.' values ('.$values.");";
-        echo $sql;
-        echo "<br>";
+        //echo $sql;
+        //echo "<br>";
         return $sql;
         //$this->runQuery($sql);
 
@@ -164,8 +266,8 @@ class model
 
         $sql = 'update '.static::$tableName.' set ' . implode(', ', $cols) . " where id =" .$data['id'];
 
-        echo $sql;
-        echo "<br>";
+        //echo $sql;
+        //echo "<br>";
         return $sql;
         //$this->runQuery($sql);
 
@@ -173,7 +275,7 @@ class model
 
     public function delete(){
 
-        echo "Here for delete:: <br>";
+        //echo "Here for delete for id:: <br>".$this->id;
         $sql = 'delete from '.static::$tableName.' where id =' .$this->id;
         $this->runQuery($sql);
     }
@@ -190,29 +292,49 @@ class todo extends model {
     public $isdone;
     protected static $tableName = 'todos';
 
-    public function __construct($id,$owneremail=null,$ownerid=null,$createddate=null,$duedate=null,$message=null,$isdone=null)
-    {
-        $this->id = $id;
-        $this->owneremail = $owneremail;
-        $this->ownerid = $ownerid;
-        $this->createddate = $createddate;
-        $this->duedate = $duedate;
-        $this->message = $message;
-        $this->isdone = $isdone;
-    }
-
-
 
 }
 
-$insertObj = new todo("27","6t8o@njit.edu","27","2017-11-09","2017-11-26","Hello7i","0");
-$insertObj->save(1);
+class account extends model {
 
-$updateObj = new todo("19","mhb@njit.edu","17","2017-11-09","2017-11-26","Hello17","0");
+    public $id;
+    public $email;
+    public $fname;
+    public $lname;
+    public $phone;
+    public $birthday;
+    public $gender;
+    public $password;
+    protected static $tableName = 'accounts';
+
+
+}
+$c = new CreateStatusTable();
+$insertObj = new todo();
+$insertObj->owneremail = 'k2k@india.com';
+$insertObj->ownerid = '19';
+$insertObj->createddate = "2017-11-09";
+$insertObj->duedate = "2017-11-26";
+$insertObj->message = "HelloMoto";
+$insertObj->isdone = '0';
+$insertObj->save();
+
+$updateObj = new todo();
+$updateObj->id= '19';
+$updateObj->owneremail = 'gun@roses.com';
+$updateObj->ownerid = '19';
+$updateObj->createddate = "2017-11-09";
+$updateObj->duedate = "2017-11-26";
+$updateObj->message = "Hello4u";
+$updateObj->isdone = '0';
 $updateObj->save();
 
-$deleteObj = new todo(14);
+$deleteObj = new todo();
+$deleteObj->id= '24';
 $deleteObj->delete();
+
+
+
 
 
 
