@@ -35,30 +35,7 @@ function tableConst($result){
     $html .= '</table>';
     print_r($html);
 
-    /*
 
-    echo "<table style='border: solid 1px black;'>";
-    $header = $result[0];
-    //print_r ($header);
-    echo "<tr>";
-    foreach ($header as $key=>$value){
-        echo "<th style='width:150px;
-                         border:1px solid black;
-                         font-weight:bold;
-                         text-align: center;
-                         text-transform: capitalize;
-                         background-color: lightskyblue'>".$key."</th>";
-        }
-    echo "</tr>";
-
-    foreach ($result as $record){
-        echo "<tr>";
-            foreach( $record as $col){
-                echo "<td style='width:150px;border:1px solid black;'>".$col."</td>";
-            }
-            echo "</tr>";
-        }
-        echo "</table>"; */
 
 }
 class CreateStatusTable{
@@ -90,15 +67,6 @@ class CreateStatusTable{
         $html .= '<td>'. $status.' </td>';
         $html .= '</tr>';
         print_r($html);
-
-
-        /*
-        echo "<table style='border: solid 1px black;'>";
-        echo "<tr>";
-        echo "<td style='width:150px;border:1px solid black;'>".$seq. "</td>";
-        echo "<td style='width:150px;border:1px solid black;'>".$comment. "</td>";
-        echo "<td style='width:150px;border:1px solid black;'>".$status. "</td>";
-        echo "</tr> </table>";*/
 
     }
 
@@ -276,6 +244,7 @@ class model
     public function delete(){
 
         //echo "Here for delete for id:: <br>".$this->id;
+        self::$operation = "Delete";
         $sql = 'delete from '.static::$tableName.' where id =' .$this->id;
         $this->runQuery($sql);
     }
@@ -333,6 +302,30 @@ $deleteObj = new todo();
 $deleteObj->id= '24';
 $deleteObj->delete();
 
+$insertObj1 = new account();
+$insertObj1->email = 'as1@ggg.com';
+$insertObj1->fname = 'Asw';
+$insertObj1->lname = 'Ujim';
+$insertObj1->phone = '221-111-033';
+$insertObj1->birthday = '1999-10-01';
+$insertObj1->gender = 'male';
+$insertObj1->password = 'ray123';
+$insertObj1->save();
+
+$updateObj1 = new account();
+$updateObj1->id = '13';
+$updateObj1->email = 'lopt@kuy.com';
+$updateObj1->fname = 'Hert';
+$updateObj1->lname = 'Jay';
+$updateObj1->phone = '221-122-033';
+$updateObj1->birthday = '1999-10-01';
+$updateObj1->gender = 'male';
+$updateObj1->password = 'Jay0123';
+$updateObj1->save();
+
+$deleteObj1 = new account();
+$deleteObj1->id= '11';
+$deleteObj1->delete();
 
 
 
